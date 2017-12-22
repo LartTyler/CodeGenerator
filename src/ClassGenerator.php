@@ -210,7 +210,7 @@
 			} else if ($this->getImportReferencedClasses()) {
 				$this->addImport($class);
 
-				$this->extends = $this->toShortName($class);
+				$this->extends = ClassUtil::toShortName($class);
 			} else
 				$this->extends = $class;
 
@@ -253,7 +253,7 @@
 			} else if ($this->getImportReferencedClasses()) {
 				$this->addImport($class);
 
-				$this->implements[] = $this->toShortName($class);
+				$this->implements[] = ClassUtil::toShortName($class);
 			} else
 				$this->implements[] = $class;
 
@@ -566,17 +566,5 @@
 				$output .= $method->generate($depth + 1) . PHP_EOL . PHP_EOL;
 
 			return rtrim($output) . PHP_EOL . $this->indent($depth) . '}';
-		}
-
-		/**
-		 * Converts a full-qualified class name to it's short name.
-		 *
-		 * @param string $class
-		 *
-		 * @return string
-		 * @deprecated Just call ClassUtil::toShortName() directly
-		 */
-		protected function toShortName($class) {
-			return ClassUtil::toShortName($class);
 		}
 	}
