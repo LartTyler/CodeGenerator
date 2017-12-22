@@ -1,0 +1,207 @@
+<?php
+
+	namespace DaybreakStudios\CodeGenerator;
+
+	use DaybreakStudios\CodeGenerator\Comment\CommentGeneratorInterface;
+	use DaybreakStudios\CodeGenerator\Member\Method\MethodGeneratorInterface;
+	use DaybreakStudios\CodeGenerator\Member\Property\PropertyGeneratorInterface;
+
+	interface ClassGeneratorInterface extends GeneratorInterface {
+		/**
+		 * Represents a normal class, i.e. "class ClassName { ..."
+		 */
+		const TYPE_CONCRETE = 1;
+
+		/**
+		 * Represents a final class, i.e. "final class ClassName { ..."
+		 */
+		const TYPE_FINAL = 2;
+
+		/**
+		 * Represents an abstract class, i.e. "abstract class ClassName { ..."
+		 */
+		const TYPE_ABSTRACT = 3;
+
+		/**
+		 * Represents an interface, i.e. "interface InterfaceName { ..."
+		 */
+		const TYPE_INTERFACE = 4;
+
+		/**
+		 * @return string
+		 */
+		public function getName();
+
+		/**
+		 * @param string $name
+		 *
+		 * @return $this
+		 */
+		public function setName($name);
+
+		/**
+		 * @return string[]
+		 */
+		public function getImports();
+
+		/**
+		 * @param string[] $imports
+		 *
+		 * @return $this
+		 */
+		public function setImports(array $imports);
+
+		/**
+		 * @param string      $class
+		 * @param string|null $alias
+		 *
+		 * @return $this
+		 */
+		public function addImport($class, $alias = null);
+
+		/**
+		 * @return int
+		 */
+		public function getType();
+
+		/**
+		 * @param int $type
+		 *
+		 * @return $this
+		 *
+		 * @see ClassGeneratorInterface::TYPE_CONCRETE
+		 * @see ClassGeneratorInterface::TYPE_FINAL
+		 * @see ClassGeneratorInterface::TYPE_ABSTRACT
+		 * @see ClassGeneratorInterface::TYPE_INTERFACE
+		 */
+		public function setType($type);
+
+		/**
+		 * @return string
+		 */
+		public function getExtends();
+
+		/**
+		 * @param string      $class
+		 * @param string|null $alias
+		 *
+		 * @return $this
+		 */
+		public function setExtends($class, $alias = null);
+
+		/**
+		 * @return string[]
+		 */
+		public function getImplements();
+
+		/**
+		 * @param string[] $classes
+		 *
+		 * @return $this
+		 */
+		public function setImplements(array $classes);
+
+		/**
+		 * @param string      $class
+		 * @param string|null $alias
+		 *
+		 * @return $this
+		 */
+		public function addImplements($class, $alias = null);
+
+		/**
+		 * @return CommentGeneratorInterface|null
+		 */
+		public function getClassComment();
+
+		/**
+		 * @param CommentGeneratorInterface|null $comment
+		 *
+		 * @return $this
+		 */
+		public function setClassComment(CommentGeneratorInterface $comment = null);
+
+		/**
+		 * @param mixed $comment if provided, the created object will be stored in this variable
+		 *
+		 * @return ClassAwareFluentGeneratorInterface|CommentGeneratorInterface
+		 */
+		public function setNewClassComment(&$comment = null);
+
+		/**
+		 * @return PropertyGeneratorInterface[]
+		 */
+		public function getProperties();
+
+		/**
+		 * @param PropertyGeneratorInterface[] $properties
+		 *
+		 * @return $this
+		 */
+		public function setProperties(array $properties);
+
+		/**
+		 * @param PropertyGeneratorInterface $property
+		 *
+		 * @return $this
+		 */
+		public function addProperty(PropertyGeneratorInterface $property);
+
+		/**
+		 * @param string $name
+		 * @param mixed  $property if provided, the created object will be stored in this variable
+		 *
+		 * @return PropertyGeneratorInterface|ClassAwareFluentGeneratorInterface
+		 */
+		public function addNewProperty($name, &$property = null);
+
+		/**
+		 * @return MethodGeneratorInterface[]
+		 */
+		public function getMethods();
+
+		/**
+		 * @param MethodGeneratorInterface[] $methods
+		 *
+		 * @return $this
+		 */
+		public function setMethods(array $methods);
+
+		/**
+		 * @param MethodGeneratorInterface $method
+		 *
+		 * @return $this
+		 */
+		public function addMethod(MethodGeneratorInterface $method);
+
+		/**
+		 * @param string $name
+		 * @param mixed  $method if provided, the created object will be stored in this variable
+		 *
+		 * @return MethodGeneratorInterface|ClassAwareFluentGeneratorInterface
+		 */
+		public function addNewMethod($name, &$method = null);
+
+		/**
+		 * @param PropertyGeneratorInterface $property
+		 * @param mixed                      $method
+		 *
+		 * @return $this
+		 */
+		public function addGetterMethod(PropertyGeneratorInterface $property, &$method = null);
+
+		/**
+		 * @param PropertyGeneratorInterface $property
+		 * @param mixed                      $method
+		 *
+		 * @return $this
+		 */
+		public function addSetterMethod(PropertyGeneratorInterface $property, &$method = null);
+
+		/**
+		 * @param PropertyGeneratorInterface $property
+		 *
+		 * @return $this
+		 */
+		public function addGetterAndSetterMethods(PropertyGeneratorInterface $property);
+	}
