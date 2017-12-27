@@ -3,6 +3,7 @@
 
 	use DaybreakStudios\CodeGenerator\Comment\CommentGeneratorInterface;
 	use DaybreakStudios\CodeGenerator\Comment\DocBlockCommentGenerator;
+	use DaybreakStudios\CodeGenerator\Exceptions\ClassGeneratorException;
 	use DaybreakStudios\CodeGenerator\Member\MemberAccess;
 	use DaybreakStudios\CodeGenerator\Member\Method\MethodGenerator;
 	use DaybreakStudios\CodeGenerator\Member\Method\MethodGeneratorInterface;
@@ -32,9 +33,9 @@
 		protected $imports = [];
 
 		/**
-		 * @var string|null
+		 * @var string[]
 		 */
-		protected $extends = null;
+		protected $extends = [];
 
 		/**
 		 * @var string[]
@@ -82,7 +83,7 @@
 		 * @param string $name
 		 * @param int    $type
 		 */
-		public function __construct($name, $type = ClassGeneratorInterface::TYPE_CONCRETE) {
+		public function __construct($name, $type = ClassType::TYPE_CONCRETE) {
 			$this->name = $name;
 			$this->type = $type;
 		}
@@ -202,17 +203,35 @@
 		/**
 		 * {@inheritdoc}
 		 */
-		public function setExtends($class, $alias = null) {
+		public function setExtends(array $classes) {
+			$this->extends = [];
+
+			foreach ($classes as $class => $alias) {
+				if (is_int($class)) {
+					$class = $alias;
+					$alias = null;
+				}
+
+				$this->addExtends($class, $alias);
+			}
+
+			return $this;
+		}
+
+		/**
+		 * {@inheritdoc}
+		 */
+		public function addExtends($class, $alias = null) {
 			if ($alias) {
 				$this->addImport($class, $alias);
 
-				$this->extends = $alias;
+				$this->extends[] = $alias;
 			} else if ($this->getImportReferencedClasses()) {
 				$this->addImport($class);
 
-				$this->extends = ClassUtil::toShortName($class);
+				$this->extends[] = ClassUtil::toShortName($class);
 			} else
-				$this->extends = $class;
+				$this->extends[] = $class;
 
 			return $this;
 		}
@@ -537,25 +556,31 @@
 				$output .= $comment->generate($depth) . PHP_EOL;
 
 			$output .= $this->indent($depth);
-			$type = $this->getType();
 
-			if ($type < ClassGeneratorInterface::TYPE_INTERFACE) {
-				if ($type === ClassGeneratorInterface::TYPE_FINAL)
-					$output .= 'final ';
-				else if ($type === ClassGeneratorInterface::TYPE_ABSTRACT)
-					$output .= 'abstract ';
+			$type = ClassType::toName($this->getType());
 
-				$output .= 'class ';
-			} else
-				$output .= 'interface ';
+			if (!$type)
+				throw ClassGeneratorException::createUnrecognizedTypeException($this->getType());
 
-			$output .= $this->getName() . ' ';
+			$output .= $type . ' ' . $this->getName() . ' ';
 
-			if ($extends = $this->getExtends())
-				$output .= 'extends ' . $extends . ' ';
+			if ($extends = $this->getExtends()) {
+				if ($type === ClassType::TYPE_TRAIT)
+					throw ClassGeneratorException::createTraitsCannotExtendOrImplementException();
+				else if ($type !== ClassType::TYPE_INTERFACE && sizeof($extends) > 1)
+					throw ClassGeneratorException::createTooManyExtendsException();
 
-			if ($implements = $this->getImplements())
+				$output .= 'extends ' . implode(', ', $extends) . ' ';
+			}
+
+			if ($implements = $this->getImplements()) {
+				if ($type === ClassType::TYPE_TRAIT)
+					throw ClassGeneratorException::createTraitsCannotExtendOrImplementException();
+				else if ($type === ClassType::TYPE_INTERFACE)
+					throw ClassGeneratorException::createInterfaceCannotImplementException();
+
 				$output .= 'implements ' . implode(', ', $implements) . ' ';
+			}
 
 			$output .= '{' . PHP_EOL;
 

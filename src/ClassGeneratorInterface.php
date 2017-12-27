@@ -8,26 +8,6 @@
 
 	interface ClassGeneratorInterface extends GeneratorInterface {
 		/**
-		 * Represents a normal class, i.e. "class ClassName { ..."
-		 */
-		const TYPE_CONCRETE = 1;
-
-		/**
-		 * Represents a final class, i.e. "final class ClassName { ..."
-		 */
-		const TYPE_FINAL = 2;
-
-		/**
-		 * Represents an abstract class, i.e. "abstract class ClassName { ..."
-		 */
-		const TYPE_ABSTRACT = 3;
-
-		/**
-		 * Represents an interface, i.e. "interface InterfaceName { ..."
-		 */
-		const TYPE_INTERFACE = 4;
-
-		/**
 		 * @return string
 		 */
 		public function getName();
@@ -69,25 +49,29 @@
 		 *
 		 * @return $this
 		 *
-		 * @see ClassGeneratorInterface::TYPE_CONCRETE
-		 * @see ClassGeneratorInterface::TYPE_FINAL
-		 * @see ClassGeneratorInterface::TYPE_ABSTRACT
-		 * @see ClassGeneratorInterface::TYPE_INTERFACE
+		 * @see ClassType
 		 */
 		public function setType($type);
 
 		/**
-		 * @return string
+		 * @return string[]
 		 */
 		public function getExtends();
+
+		/**
+		 * @param string[] $classes
+		 *
+		 * @return $this
+		 */
+		public function setExtends(array $classes);
 
 		/**
 		 * @param string      $class
 		 * @param string|null $alias
 		 *
-		 * @return $this
+		 * @return mixed
 		 */
-		public function setExtends($class, $alias = null);
+		public function addExtends($class, $alias = null);
 
 		/**
 		 * @return string[]
