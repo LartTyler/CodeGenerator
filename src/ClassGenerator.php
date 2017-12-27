@@ -9,6 +9,8 @@
 	use DaybreakStudios\CodeGenerator\Member\Method\MethodGeneratorInterface;
 	use DaybreakStudios\CodeGenerator\Member\Property\PropertyGenerator;
 	use DaybreakStudios\CodeGenerator\Member\Property\PropertyGeneratorInterface;
+	use DaybreakStudios\CodeGenerator\Member\Traits\TraitGenerator;
+	use DaybreakStudios\CodeGenerator\Member\Traits\TraitGeneratorInterface;
 	use DaybreakStudios\CodeGenerator\Utility\ClassUtil;
 
 	class ClassGenerator extends AbstractGenerator implements ClassGeneratorInterface {
@@ -43,6 +45,11 @@
 		protected $implements = [];
 
 		/**
+		 * @var TraitGeneratorInterface[]
+		 */
+		protected $traits = [];
+
+		/**
 		 * @var CommentGeneratorInterface|null
 		 */
 		protected $classComment = null;
@@ -66,6 +73,11 @@
 		 * @var string
 		 */
 		protected $commentGeneratorClass = DocBlockCommentGenerator::class;
+
+		/**
+		 * @var string
+		 */
+		protected $traitGeneratorClass = TraitGenerator::class;
 
 		/**
 		 * @var string
@@ -178,6 +190,20 @@
 		}
 
 		/**
+		 * @param string $class
+		 *
+		 * @return string|null
+		 */
+		public function getImport($class) {
+			$imports = $this->getImports();
+
+			if (!isset($imports[$class]))
+				return null;
+
+			return $imports[$class] ?: $class;
+		}
+
+		/**
 		 * {@inheritdoc}
 		 */
 		public function getType() {
@@ -277,6 +303,51 @@
 				$this->implements[] = $class;
 
 			return $this;
+		}
+
+		/**
+		 * {@inheritdoc}
+		 */
+		public function getTraits() {
+			return $this->traits;
+		}
+
+		/**
+		 * {@inheritdoc}
+		 */
+		public function setTraits(array $traits) {
+			$this->traits = [];
+
+			foreach ($traits as $trait)
+				$this->addTrait($trait);
+
+			return $this;
+		}
+
+		/**
+		 * {@inheritdoc}
+		 */
+		public function addTrait(TraitGeneratorInterface $trait) {
+			$this->traits[] = $trait;
+
+			$trait->setTargetPHPVersion($this->getTargetPHPVersion());
+
+			return $this;
+		}
+
+		/**
+		 * {@inheritdoc}
+		 */
+		public function addNewTrait($name, &$trait = null) {
+			$class = $this->getTraitGeneratorClass();
+
+			/** @var TraitGeneratorInterface $trait */
+			$this->addTrait($trait = new $class($name));
+
+			if ($trait instanceof ParentAwareInterface)
+				$trait->setParent($this);
+
+			return $trait;
 		}
 
 		/**
@@ -479,6 +550,42 @@
 		/**
 		 * @return string
 		 */
+		public function getCommentGeneratorClass() {
+			return $this->commentGeneratorClass;
+		}
+
+		/**
+		 * @param string $commentGeneratorClass
+		 *
+		 * @return $this
+		 */
+		public function setCommentGeneratorClass($commentGeneratorClass) {
+			$this->commentGeneratorClass = $commentGeneratorClass;
+
+			return $this;
+		}
+
+		/**
+		 * @return string
+		 */
+		public function getTraitGeneratorClass() {
+			return $this->traitGeneratorClass;
+		}
+
+		/**
+		 * @param string $traitGeneratorClass
+		 *
+		 * @return $this
+		 */
+		public function setTraitGeneratorClass($traitGeneratorClass) {
+			$this->traitGeneratorClass = $traitGeneratorClass;
+
+			return $this;
+		}
+
+		/**
+		 * @return string
+		 */
 		public function getPropertyGeneratorClass() {
 			return $this->propertyGeneratorClass;
 		}
@@ -513,24 +620,6 @@
 		}
 
 		/**
-		 * @return string
-		 */
-		public function getCommentGeneratorClass() {
-			return $this->commentGeneratorClass;
-		}
-
-		/**
-		 * @param string $commentGeneratorClass
-		 *
-		 * @return $this
-		 */
-		public function setCommentGeneratorClass($commentGeneratorClass) {
-			$this->commentGeneratorClass = $commentGeneratorClass;
-
-			return $this;
-		}
-
-		/**
 		 * {@inheritdoc}
 		 */
 		public function generate($depth = 0) {
@@ -557,12 +646,13 @@
 
 			$output .= $this->indent($depth);
 
-			$type = ClassType::toName($this->getType());
+			$type = $this->getType();
+			$typeName = ClassType::toName($type);
 
-			if (!$type)
-				throw ClassGeneratorException::createUnrecognizedTypeException($this->getType());
+			if (!$typeName)
+				throw ClassGeneratorException::createUnrecognizedTypeException($type);
 
-			$output .= $type . ' ' . $this->getName() . ' ';
+			$output .= $typeName . ' ' . $this->getName() . ' ';
 
 			if ($extends = $this->getExtends()) {
 				if ($type === ClassType::TYPE_TRAIT)
@@ -583,6 +673,14 @@
 			}
 
 			$output .= '{' . PHP_EOL;
+
+			if ($traits = $this->getTraits()) {
+				if ($type === ClassType::TYPE_INTERFACE)
+					throw ClassGeneratorException::createInterfaceCannotUseTraits();
+
+				foreach ($traits as $trait)
+					$output .= $trait->generate($depth + 1) . PHP_EOL . PHP_EOL;
+			}
 
 			foreach ($this->getProperties() as $property)
 				$output .= $property->generate($depth + 1) . PHP_EOL . PHP_EOL;

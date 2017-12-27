@@ -19,6 +19,13 @@
 		/**
 		 * @return static
 		 */
+		public static function createInterfaceCannotUseTraits() {
+			return new static('Interfaces cannot use traits.');
+		}
+
+		/**
+		 * @return static
+		 */
 		public static function createTraitsCannotExtendOrImplementException() {
 			return new static('Traits cannot extend or implement another class or interface.');
 		}

@@ -5,6 +5,7 @@
 	use DaybreakStudios\CodeGenerator\Comment\CommentGeneratorInterface;
 	use DaybreakStudios\CodeGenerator\Member\Method\MethodGeneratorInterface;
 	use DaybreakStudios\CodeGenerator\Member\Property\PropertyGeneratorInterface;
+	use DaybreakStudios\CodeGenerator\Member\Traits\TraitGeneratorInterface;
 
 	interface ClassGeneratorInterface extends GeneratorInterface {
 		/**
@@ -92,6 +93,33 @@
 		 * @return $this
 		 */
 		public function addImplements($class, $alias = null);
+
+		/**
+		 * @return TraitGeneratorInterface[]
+		 */
+		public function getTraits();
+
+		/**
+		 * @param TraitGeneratorInterface[] $traits
+		 *
+		 * @return $this
+		 */
+		public function setTraits(array $traits);
+
+		/**
+		 * @param TraitGeneratorInterface $trait
+		 *
+		 * @return $this
+		 */
+		public function addTrait(TraitGeneratorInterface $trait);
+
+		/**
+		 * @param string $name
+		 * @param mixed  $trait
+		 *
+		 * @return TraitGeneratorInterface|ClassAwareFluentGeneratorInterface
+		 */
+		public function addNewTrait($name, &$trait = null);
 
 		/**
 		 * @return CommentGeneratorInterface|null

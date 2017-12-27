@@ -8,6 +8,9 @@
 		 * @return string
 		 */
 		public static function toShortName($class) {
+			if (strpos($class, '\\') === false)
+				return $class;
+
 			return substr($class, strrpos($class, '\\') + 1);
 		}
 	}
