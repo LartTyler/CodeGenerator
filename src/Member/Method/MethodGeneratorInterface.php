@@ -24,6 +24,18 @@
 		public function setAbstract($abstract);
 
 		/**
+		 * @return bool
+		 */
+		public function isFinal();
+
+		/**
+		 * @param bool $final
+		 *
+		 * @return $this
+		 */
+		public function setFinal($final);
+
+		/**
 		 * @return PropertyGeneratorInterface
 		 */
 		public function getArguments();

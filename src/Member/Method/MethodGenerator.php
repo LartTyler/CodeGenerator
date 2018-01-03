@@ -15,6 +15,11 @@
 		protected $abstract = false;
 
 		/**
+		 * @var bool
+		 */
+		protected $final = false;
+
+		/**
 		 * @var PropertyGeneratorInterface[]
 		 */
 		protected $arguments = [];
@@ -59,6 +64,24 @@
 		 */
 		public function setAbstract($abstract) {
 			$this->abstract = $abstract;
+
+			return $this;
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function isFinal() {
+			return $this->final;
+		}
+
+		/**
+		 * @param bool $final
+		 *
+		 * @return $this
+		 */
+		public function setFinal($final) {
+			$this->final = $final;
 
 			return $this;
 		}
@@ -178,6 +201,8 @@
 
 			if ($this->isAbstract())
 				$output .= 'abstract ';
+			else if ($this->isFinal())
+				$output .= 'final ';
 
 			$output .= 'function ' . $this->getName() . '(';
 

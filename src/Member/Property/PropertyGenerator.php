@@ -109,6 +109,8 @@
 					$default = $default ? 'true' : 'false';
 				else if ($default === null)
 					$default = 'null';
+				else if (is_array($default))
+					$default = '[' . implode(', ', $default) . ']';
 
 				$output .= ' = ' . $default;
 			}
